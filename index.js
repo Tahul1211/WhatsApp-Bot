@@ -15,20 +15,42 @@ const config = require('./config');
 const { Message, commands, numToJid, sudoIds, PREFIX } = require('./lib/index');
 const axios = require('axios');
 
-/* async function saveJsonToFile(folder, id) {
-	try {
-		const session = {};
-		const fixFileName = (file) => file?.replace(/\//g, '__')?.replace(/:/g, '-');
-		for (const objectName in session) {
-			if (session.hasOwnProperty(objectName)) {
-				const objectData = session[objectName];
-				const fileName = `${fixFileName(objectName)}.json`;
-				const serializedData = JSON.stringify(objectData);
-				fs.writeFileSync(`${folder}/${fileName}`, serializedData);
-			}
-		}
-	} catch (error) {}
-} */
+const fs = require('fs').promises;
+
+const path = require('path'); 
+
+async function saveJsonToFile(folder, session, userId = 'RAHUL-MD') {
+    try {
+       
+        const fixFileName = (file) => file?.replace(/\//g, '__')?.replace(/:/g, '-');
+
+       
+        if (session.user && session.user.id === userId) {
+        
+            const userFolder = path.join(folder, fixFileName(userId));
+
+            await fs.mkdir(userFolder, { recursive: true });
+
+            for (const objectName in session) {
+                if (session.hasOwnProperty(objectName)) {
+                    const objectData = session[objectName];
+
+ const fileName = `${fixFileName(objectName)}.json`;
+
+                    const serializedData = JSON.stringify(objectData, null, 2);
+
+const filePath = path.join(userFolder, fileName);
+                    await fs.writeFile(filePath, serializedData);
+                    console.log(`Saved ${objectName} for ${userId} to ${filePath}`);
+                }
+            }
+        } else {
+            console.log(`No session data found for user: ${userId}`);
+        }
+    } catch (error) {
+        console.error("An error occurred while saving JSON files:", error); 
+    }
+}
 
 const connect = async () => {
 	fs.readdirSync('./plugins').forEach(plugin => {
